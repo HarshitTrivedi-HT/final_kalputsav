@@ -1,95 +1,58 @@
-const FB_KEY = "kalputsav_feedback_v1";
+// ------------------------------
+// GitHub-based universal feedback system
+// ------------------------------
 
-// load
-function loadFeedback() {
-  try {
-    return JSON.parse(localStorage.getItem(FB_KEY) || "[]");
-  } catch {
-    return [];
-  }
+const FB_FILE_URL =
+  "https://raw.githubusercontent.com/HarshitTrivedi-HT/kalpostav-feedback/main/feedback.json";
+
+const FB_API_URL =
+  "https://api.github.com/repos/HarshitTrivedi-HT/kalpostav-feedback/contents/feedback.json";
+
+// IMPORTANT — Replace with your GitHub token
+const GITHUB_TOKEN = "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";
+
+// ------------------------------
+// Load Feedback (from GitHub JSON)
+// ------------------------------
+async function loadFB() {
+  const res = await fetch(FB_FILE_URL + "?t=" + Date.now()); // avoid caching
+  return await res.json();
 }
 
-// save
-function saveFeedback(arr) {
-  localStorage.setItem(FB_KEY, JSON.stringify(arr));
-}
+// ------------------------------
+// Save Feedback (overwrite JSON on GitHub)
+// ------------------------------
+async function saveFB(arr) {
+  // 1. Get current file SHA (required by GitHub API to overwrite)
+  const oldFile = await fetch(FB_API_URL, {
+    headers: { Authorization: `Bearer ${GITHUB_TOKEN}` }
+  }).then((r) => r.json());
 
-function escapeHTML(str) {
-  return String(str).replace(/[&<>"']/g, m => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;'
-  })[m]);
-}
+  // 2. Convert updated JSON to Base64
+  const newContent = btoa(JSON.stringify(arr, null, 2));
 
-// render
-function renderFeedback() {
-  const list = document.getElementById("feedbackList");
-  const items = loadFeedback().reverse();
-  list.innerHTML = "";
-
-  if (!items.length) {
-    list.innerHTML = "<p style='color:#777'>No feedback yet.</p>";
-    return;
-  }
-
-  items.forEach(fb => {
-    const div = document.createElement("div");
-    div.className = "fb-item";
-    div.innerHTML = `
-      <div><strong>${escapeHTML(fb.name)}</strong> 
-      • <span class="rating">${fb.rating}/5</span></div>
-      <em>${escapeHTML(fb.subject)}</em>
-      <p>${escapeHTML(fb.comments)}</p>
-    `;
-    list.appendChild(div);
+  // 3. Upload (PUT request)
+  await fetch(FB_API_URL, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${GITHUB_TOKEN}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      message: "Update feedback.json",
+      content: newContent,
+      sha: oldFile.sha
+    })
   });
 }
 
-// save button
-document.getElementById("fbSave").onclick = () => {
-  const name = document.getElementById("fbName").value || "Anonymous";
-  const subject = document.getElementById("fbSubject").value;
-  const rating = parseInt(document.getElementById("fbRating").value);
-  const comments = document.getElementById("fbComments").value.trim();
-
-  if (rating < 1 || rating > 5) {
-    alert("Rating must be between 1-5");
-    return;
-  }
-
-  const fb = loadFeedback();
-  fb.push({ name, subject, rating, comments });
-  saveFeedback(fb);
-
-  renderFeedback();
-  document.getElementById("fbComments").value = "";
-  alert("Feedback saved!");
-};
-
-// clear button
-
-  document.getElementById("fbClear").onclick = () => {
-  const pin = prompt("Only admins all allowed to clear feedback. Enter admin PIN to clear all feedback:");
-
-  // Change this PIN to anything you want
-  const ADMIN_PIN = "0612";
-
-  if (pin === ADMIN_PIN) {
-    if (confirm("Are you sure you want to clear all feedback?")) {
-      localStorage.removeItem(FB_KEY);
-      renderFeedback();
-      alert("All feedback cleared.");
-    }
-  } else {
-    alert("Incorrect PIN. You are not allowed to clear feedback.");
-  }
-};
-
-  
-
-
-// initial load
-renderFeedback();
+// ------------------------------
+// Escape HTML (for safety)
+// ------------------------------
+function escapeHTML(str) {
+  return String(str || "").replace(/[&<>"']/g, (m) => {
+    return {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
