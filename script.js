@@ -1,58 +1,98 @@
-// ------------------------------
-// GitHub-based universal feedback system
-// ------------------------------
+const WORKER_URL = "https://sparkling-limit-1e35.appletrivedi123.workers.dev/";
 
-const FB_FILE_URL =
-  "https://raw.githubusercontent.com/HarshitTrivedi-HT/kalpostav-feedback/main/feedback.json";
 
-const FB_API_URL =
-  "https://api.github.com/repos/HarshitTrivedi-HT/kalpostav-feedback/contents/feedback.json";
+// Escape HTML for safety
+function escapeHTML(str) {
+  return String(str).replace(/[&<>"']/g, (m) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  })[m]);
+}
 
-// IMPORTANT — Replace with your GitHub token
-const GITHUB_TOKEN = "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";
-
-// ------------------------------
-// Load Feedback (from GitHub JSON)
-// ------------------------------
+// Load feedback from GitHub via Worker
 async function loadFB() {
-  const res = await fetch(FB_FILE_URL + "?t=" + Date.now()); // avoid caching
+  const res = await fetch(WORKER_URL);
   return await res.json();
 }
 
-// ------------------------------
-// Save Feedback (overwrite JSON on GitHub)
-// ------------------------------
+// Save feedback via Worker (POST)
 async function saveFB(arr) {
-  // 1. Get current file SHA (required by GitHub API to overwrite)
-  const oldFile = await fetch(FB_API_URL, {
-    headers: { Authorization: `Bearer ${GITHUB_TOKEN}` }
-  }).then((r) => r.json());
-
-  // 2. Convert updated JSON to Base64
-  const newContent = btoa(JSON.stringify(arr, null, 2));
-
-  // 3. Upload (PUT request)
-  await fetch(FB_API_URL, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${GITHUB_TOKEN}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      message: "Update feedback.json",
-      content: newContent,
-      sha: oldFile.sha
-    })
+  await fetch(WORKER_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(arr),
   });
 }
 
-// ------------------------------
-// Escape HTML (for safety)
-// ------------------------------
-function escapeHTML(str) {
-  return String(str || "").replace(/[&<>"']/g, (m) => {
-    return {
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
+// Render feedback on page
+async function renderFeedback() {
+  const list = document.getElementById("feedbackList");
+  list.innerHTML = "Loading...";
+
+  let items = (await loadFB()).reverse();
+
+  if (!items.length) {
+    list.innerHTML = "<p>No feedback yet.</p>";
+    return;
+  }
+
+  list.innerHTML = "";
+
+  items.forEach((fb) => {
+    const div = document.createElement("div");
+    div.className = "fb-item";
+    div.innerHTML = `
+      <strong>${escapeHTML(fb.name)}</strong> • 
+      <span class="rating">${fb.rating}/5</span><br>
+      <em>${escapeHTML(fb.subject)}</em>
+      <p>${escapeHTML(fb.comments)}</p>
+    `;
+    list.appendChild(div);
+  });
+}
+
+// Handle submit
+document.getElementById("fbSave").onclick = async () => {
+  const name = document.getElementById("name").value || "Anonymous";
+  const subject = document.getElementById("subject").value;
+  const rating = parseInt(document.getElementById("rating").value);
+  const comments = document.getElementById("comments").value;
+
+  if (rating < 1 || rating > 5) {
+    alert("Rating must be 1–5");
+    return;
+  }
+
+  let arr = await loadFB();
+  arr.push({ name, subject, rating, comments, ts: Date.now() });
+
+  await saveFB(arr);
+  await renderFeedback();
+
+  alert("Thank you! Feedback saved.");
+};
+
+// Admin-only clear feedback
+document.getElementById("fbClear").onclick = async () => {
+  const pin = prompt("Enter admin PIN");
+
+  const ADMIN_PIN = "1234"; // change to your PIN
+
+  if (pin !== ADMIN_PIN) {
+    alert("Incorrect PIN");
+    return;
+  }
+
+  if (!confirm("Clear ALL feedback?")) return;
+
+  await saveFB([]);
+  await renderFeedback();
+
+  alert("All feedback cleared.");
+};
+
+// Initial load
+renderFeedback();
