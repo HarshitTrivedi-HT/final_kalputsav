@@ -1,0 +1,153 @@
+#main{
+    color: white;
+    padding: 15px;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+
+}
+#mainek{
+    height: 80px;
+    width: 80px;
+    /* margin-top: 37px; */
+    margin-bottom: -55px;
+    margin-left: 369px;
+
+}
+.carousel-inner{
+     height: 300px;
+}
+
+.item, img{
+    /* height: 100% !important;
+    width:  100% !important; */
+    border: 1px solid red;
+    height: 300px;
+}
+#about{
+    align-items: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: bold;
+    color: purple;
+}
+.btn{
+    width: 200px;
+    margin: 10px;
+}
+.card{
+    border: 2px soild black;
+    border-radius: 12px;
+}
+
+        .body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+
+        .containera {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background-color: #fff;
+        }
+
+        .h1, .h2 {
+            color: #1d3557;
+        }
+
+        .h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .h2 {
+            font-size: 1.5em;
+            margin-top: 30px;
+        }
+
+        .p {
+            margin-bottom: 15px;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        ul li {
+            margin-bottom: 10px;
+        }
+
+        .highlight {
+            color: #457b9d;
+            font-weight: bold;
+        }
+        .feedback-section {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  max-width: 450px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.feedback-section h2,
+.feedback-section h3 {
+  margin-top: 0;
+}
+
+#fbForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#fbForm input,
+#fbForm select,
+#fbForm textarea {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+#fbForm button {
+  padding: 10px;
+  border-radius: 8px;
+  background: #5b21b6;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+#fbForm button:hover {
+  opacity: 0.9;
+}
+
+#fbClear {
+  background: #ddd;
+  color: #333;
+}
+
+#feedbackList {
+  margin-top: 12px;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.fb-item {
+  background: #fafafa;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #eee;
+}
+
+.fb-item .rating {
+  font-weight: bold;
+  color: #5b21b6;
+}
+#lgm{
+  width: 40px;
+  height: 40px;
+  border: none;
+}
